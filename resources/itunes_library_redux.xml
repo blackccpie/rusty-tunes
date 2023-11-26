@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Major Version</key><integer>1</integer>
+	<key>Minor Version</key><integer>1</integer>
+	<key>Tracks</key>
+	<dict>
+		<key>1430</key>
+		<dict>
+			<key>Track ID</key><integer>1430</integer>
+			<key>Name</key><string>Can I Kick It?</string>
+			<key>Artist</key><string>A Tribe Called Quest</string>
+		</dict>
+		<key>1432</key>
+		<dict>
+			<key>Track ID</key><integer>1432</integer>
+			<key>Name</key><string>Save Me</string>
+			<key>Artist</key><string>Aimee Mann</string>
+		</dict>
+		<key>1434</key>
+		<dict>
+			<key>Track ID</key><integer>1434</integer>
+			<key>Name</key><string>That's Just What You Are</string>
+			<key>Artist</key><string>Aimee Mann</string>
+		</dict>
+		<key>1436</key>
+		<dict>
+			<key>Track ID</key><integer>1436</integer>
+			<key>Name</key><string> J'ai dormi sous l'eau</string>
+			<key>Artist</key><string>Air</string>
+		</dict>
+	</dict>
+	<key>Playlists</key>
+	<array>
+		<dict>
+			<key>Name</key><string>Bibliothèque</string>
+			<key>Playlist ID</key><integer>6448</integer>
+			<key>Playlist Items</key>
+			<array>
+				<dict>
+					<key>Track ID</key><integer>1430</integer>
+				</dict>
+				<dict>
+					<key>Track ID</key><integer>1432</integer>
+				</dict>
+				<dict>
+					<key>Track ID</key><integer>1434</integer>
+				</dict>
+				<dict>
+					<key>Track ID</key><integer>1436</integer>
+				</dict>
+            </array>
+		</dict>
+	</array>
+</dict>
+</plist>
