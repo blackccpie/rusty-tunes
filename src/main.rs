@@ -22,26 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-extern crate plist;
 #[macro_use]
 extern crate serde_derive;
 
 use std::collections::HashMap;
+use deezer_rs::Deezer;
 
 #[derive(Debug, Deserialize)]
 struct Track {
     #[serde(rename = "Track ID")]
     track_id: i32,
-    name: String,
+    Name: String,
+    Artist: String,
 }
 
 #[derive(Debug, Deserialize)]
 struct Playlist {
-    name: String,
+    Name: String,
     #[serde(rename = "Playlist ID")]
     playlist_id: i32,
     #[serde(default)]
-    tracks: Vec<Track>,
+    Tracks: Vec<Track>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -50,20 +51,31 @@ struct ApplePlist {
     major_version: i32,
     #[serde(rename = "Minor Version")]
     minor_version: i32,
-    tracks: HashMap<String, Track>,
-    playlists: Vec<Playlist>,
+    Tracks: HashMap<String, Track>,
+    Playlists: Vec<Playlist>,
 }
 
 fn print_hashmap(hashmap: &HashMap<String, Track>) {
     for (key, value) in hashmap {
-        println!("Key: {:?}, Value: {:?}", key, value.name);
+        println!("Key: {:?}, Value: {:?}", key, value.Name);
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     
     let itunes_library: ApplePlist = plist::from_file("resources/itunes_library_redux.xml").unwrap();
+    let tracks = &itunes_library.Tracks;
 
     println!("{:?}, {:?}", itunes_library.major_version, itunes_library.minor_version);
-    print_hashmap(&itunes_library.tracks);
+    print_hashmap(tracks);
+
+    let client = Deezer::new();
+
+    for (key, value) in tracks {
+        let search_string: String = format!("{} {}", value.Name, value.Artist);
+        println!("{:?}", search_string);
+        let search = client.search.get(&search_string).await;
+        println!("{:#?}\n", search.unwrap());
+    }
 }
