@@ -68,14 +68,23 @@ async fn main() {
     let tracks = &itunes_library.Tracks;
 
     println!("{:?}, {:?}", itunes_library.major_version, itunes_library.minor_version);
-    print_hashmap(tracks);
+    //print_hashmap(tracks);
 
     let client = Deezer::new();
 
     for (key, value) in tracks {
         let search_string: String = format!("{} {}", value.Name, value.Artist);
-        println!("{:?}", search_string);
-        let search = client.search.get(&search_string).await;
-        println!("{:#?}\n", search.unwrap());
+        println!("*********** {:?} ***********", search_string);
+        let search_results_res = client.search.get(&search_string).await;
+        let search_results = match search_results_res {
+            Ok(search) => search,
+            Err(_) => continue,
+        };
+    
+        //println!("{:#?}\n", search_results);
+        for search_result in search_results.data.iter()
+        {
+            println!("{:?} / {:?}", search_result.title, search_result.artist.name);
+        }         
     }
 }
