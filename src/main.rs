@@ -26,6 +26,9 @@ THE SOFTWARE.
 extern crate serde_derive;
 
 use std::collections::HashMap;
+
+use clap::Parser;
+
 use deezer_rs::Deezer;
 
 #[derive(Debug, Deserialize)]
@@ -61,30 +64,64 @@ fn print_hashmap(hashmap: &HashMap<String, Track>) {
     }
 }
 
+#[derive(Parser)]
+struct Cli {
+    mode: String,
+    path: std::path::PathBuf,
+}
+
 #[tokio::main]
 async fn main() {
     
-    let itunes_library: ApplePlist = plist::from_file("resources/itunes_library_redux.xml").unwrap();
-    let tracks = &itunes_library.Tracks;
+    let args = Cli::parse();
 
-    println!("{:?}, {:?}", itunes_library.major_version, itunes_library.minor_version);
-    //print_hashmap(tracks);
-
-    let client = Deezer::new();
-
-    for (key, value) in tracks {
-        let search_string: String = format!("{} {}", value.Name, value.Artist);
-        println!("*********** {:?} ***********", search_string);
-        let search_results_res = client.search.get(&search_string).await;
-        let search_results = match search_results_res {
-            Ok(search) => search,
-            Err(_) => continue,
-        };
+    let itunes_library: ApplePlist = plist::from_file(args.path).unwrap();
     
-        //println!("{:#?}\n", search_results);
-        for search_result in search_results.data.iter()
+    if(args.mode == "P")
+    {
+        println!("----------- PLAYLISTS -----------");
+        let playlists = &itunes_library.Playlists;
+        for playlist in playlists.iter()
         {
+            println!("{:?}", playlist.Name);
+        }
+    }
+    else if(args.mode == "T")
+    {
+        println!("----------- TRACKS -----------");
+        let tracks = &itunes_library.Tracks;
+
+        //println!("{:?}, {:?}", itunes_library.major_version, itunes_library.minor_version);
+        //print_hashmap(tracks);
+
+        let client = Deezer::new();
+
+        for (key, value) in tracks
+        {
+            let search_string: String = format!("{} {}", value.Name, value.Artist);
+            println!("*********** {:?} ***********", search_string);
+            let search_results_res = client.search.get(&search_string).await;
+            
+            let search_results = search_results_res.unwrap();
+            
+            /*let search_results = match search_results_res {
+                Ok(search) => search,
+                Err(_) => continue,
+            };*/
+        
+            // print first result
+            let search_result = &search_results.data[0];
             println!("{:?} / {:?}", search_result.title, search_result.artist.name);
-        }         
+            
+            // print all results
+            /*for search_result in search_results.data.iter()
+            {
+                println!("{:?} / {:?}", search_result.title, search_result.artist.name);
+            }*/        
+        }
+    }
+    else
+    {
+        println!("Unknown mode!");
     }
 }
