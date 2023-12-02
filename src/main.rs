@@ -38,7 +38,12 @@ struct Track {
     #[serde(rename = "Track ID")]
     track_id: i32,
     Name: String,
-    Artist: String,
+    #[serde(default = "default_artist")]
+    Artist: String, // some tracks are missing artist...
+}
+
+fn default_artist() -> String {
+    "Unknown".to_string()
 }
 
 #[derive(Debug, Deserialize)]
@@ -105,6 +110,13 @@ async fn main() {
             let search_results_res = client.search.get(&search_string).await;
             
             let search_results = search_results_res.unwrap();
+
+            // check search result is not empty
+            if search_results.data.is_empty()
+            {
+                println!("Search didn't provide any result... Sorry!");
+                return;
+            }
             
             /*let search_results = match search_results_res {
                 Ok(search) => search,
@@ -131,13 +143,22 @@ async fn main() {
         let random_track = all_tracks.choose(&mut rand::thread_rng()).unwrap();
         println!("Selected track: {:?} / {:?}", random_track.Name, random_track.Artist );
         
-        // could be factoriezd! (same code upper)
+        // could be factorized! (same code upper)
         let client = Deezer::new();
         let search_string: String = format!("{} {}", random_track.Name, random_track.Artist);
         let search_results_res = client.search.get(&search_string).await; 
         let search_results = search_results_res.unwrap();
+
+        // check search result is not empty
+        if search_results.data.is_empty()
+        {
+            println!("Search didn't provide any result... Sorry!");
+            return;
+        }
+
         let search_result = &search_results.data[0]; // first result
-        open::with(&search_result.link, "firefox");
+        // manage error!
+        let _ = open::with(&search_result.link, "firefox");
     }
     else
     {
