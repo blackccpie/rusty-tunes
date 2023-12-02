@@ -29,11 +29,13 @@ use std::collections::HashMap;
 
 use rand::seq::SliceRandom;
 
+use eframe::egui;
+
 use clap::Parser;
 
 use deezer_rs::Deezer;
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Default, Deserialize, Clone)]
 struct Track {
     #[serde(rename = "Track ID")]
     track_id: i32,
@@ -138,13 +140,57 @@ async fn main() {
     {
         println!("----------- RANDOM TRACK! -----------");
 
-        // not very optimal random pick...
-        let all_tracks: Vec<_> = itunes_library.Tracks.values().cloned().collect();
-        let random_track = all_tracks.choose(&mut rand::thread_rng()).unwrap();
-        println!("Selected track: {:?} / {:?}", random_track.Name, random_track.Artist );
-        
-        // could be factorized! (same code upper)
+        // could be factorized! (same sort of code up there)
         let client = Deezer::new();
+
+        let options = eframe::NativeOptions {
+            viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
+            ..Default::default()
+        };
+
+        let mut random_track = Track::default();
+        let mut random_track_str : String = "--".to_owned();
+
+        eframe::run_simple_native("Rusty-Tunes Randomnessssss", options, move |ctx, _frame| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                ui.horizontal(|ui|
+                {
+                    let name_label = ui.label("Track: ");
+                    ui.text_edit_singleline(&mut random_track_str)
+                        .labelled_by(name_label.id);
+                });
+                if ui.button("Randomize").clicked()
+                {
+                    // not very optimal random pick...
+                    let all_tracks: Vec<_> = itunes_library.Tracks.values().cloned().collect();
+                    random_track = all_tracks.choose(&mut rand::thread_rng()).unwrap().clone();
+                    println!("Selected track: {:?} / {:?}", random_track.Name, random_track.Artist);
+                    random_track_str = format!("{} / {}", random_track.Name, random_track.Artist);
+                }
+                if ui.button("Open").clicked()
+                {
+                    /*
+                    let search_string: String = format!("{} {}", random_track.Name, random_track.Artist);
+                    let search_results_res = client.search.get(&search_string).await; 
+                    let search_results = search_results_res.unwrap();
+
+                    // check search result is not empty
+                    if search_results.data.is_empty()
+                    {
+                        println!("Search didn't provide any result... Sorry!");
+                        return;
+                    }
+
+                    let search_result = &search_results.data[0]; // first result
+                    
+                    // manage error!
+                    let _ = open::with(&search_result.link, "firefox");
+                    */
+                }
+            });
+        });
+
+        /*
         let search_string: String = format!("{} {}", random_track.Name, random_track.Artist);
         let search_results_res = client.search.get(&search_string).await; 
         let search_results = search_results_res.unwrap();
@@ -157,11 +203,15 @@ async fn main() {
         }
 
         let search_result = &search_results.data[0]; // first result
+        
         // manage error!
         let _ = open::with(&search_result.link, "firefox");
+        */
     }
     else
     {
         println!("Unknown mode!");
     }
+
+    println!("Goodbye!");
 }
