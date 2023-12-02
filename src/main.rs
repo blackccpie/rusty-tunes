@@ -27,11 +27,13 @@ extern crate serde_derive;
 
 use std::collections::HashMap;
 
+use rand::seq::SliceRandom;
+
 use clap::Parser;
 
 use deezer_rs::Deezer;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 struct Track {
     #[serde(rename = "Track ID")]
     track_id: i32,
@@ -77,7 +79,7 @@ async fn main() {
 
     let itunes_library: ApplePlist = plist::from_file(args.path).unwrap();
     
-    if(args.mode == "P")
+    if args.mode == "P"
     {
         println!("----------- PLAYLISTS -----------");
         let playlists = &itunes_library.Playlists;
@@ -86,7 +88,7 @@ async fn main() {
             println!("{:?}", playlist.Name);
         }
     }
-    else if(args.mode == "T")
+    else if args.mode == "T"
     {
         println!("----------- TRACKS -----------");
         let tracks = &itunes_library.Tracks;
@@ -119,6 +121,23 @@ async fn main() {
                 println!("{:?} / {:?}", search_result.title, search_result.artist.name);
             }*/        
         }
+    }
+    else if args.mode == "R"
+    {
+        println!("----------- RANDOM TRACK! -----------");
+
+        // not very optimal random pick...
+        let all_tracks: Vec<_> = itunes_library.Tracks.values().cloned().collect();
+        let random_track = all_tracks.choose(&mut rand::thread_rng()).unwrap();
+        println!("Selected track: {:?} / {:?}", random_track.Name, random_track.Artist );
+        
+        // could be factoriezd! (same code upper)
+        let client = Deezer::new();
+        let search_string: String = format!("{} {}", random_track.Name, random_track.Artist);
+        let search_results_res = client.search.get(&search_string).await; 
+        let search_results = search_results_res.unwrap();
+        let search_result = &search_results.data[0]; // first result
+        open::with(&search_result.link, "firefox");
     }
     else
     {
