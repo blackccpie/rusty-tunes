@@ -25,15 +25,12 @@ THE SOFTWARE.
 #[macro_use]
 extern crate serde_derive;
 
-use std::collections::HashMap;
-
-use rand::seq::SliceRandom;
-
-use eframe::egui;
-
 use clap::Parser;
-
 use deezer_rs::Deezer;
+use eframe::egui;
+use rand::seq::SliceRandom;
+//use reqwest::blocking;
+use std::collections::HashMap;
 
 #[derive(Debug, Default, Deserialize, Clone)]
 struct Track {
@@ -105,7 +102,7 @@ async fn main() {
 
         let client = Deezer::new();
 
-        for (key, value) in tracks
+        for (_key, value) in tracks
         {
             let search_string: String = format!("{} {}", value.Name, value.Artist);
             println!("*********** {:?} ***********", search_string);
@@ -140,18 +137,20 @@ async fn main() {
     {
         println!("----------- RANDOM TRACK! -----------");
 
-        // could be factorized! (same sort of code up there)
-        let client = Deezer::new();
-
         let options = eframe::NativeOptions {
             viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
             ..Default::default()
         };
 
-        let mut random_track = Track::default();
         let mut random_track_str : String = "--".to_owned();
 
         eframe::run_simple_native("Rusty-Tunes Randomnessssss", options, move |ctx, _frame| {
+
+            egui_extras::install_image_loaders(ctx);
+                
+            let client = Deezer::new();
+            //let mut search_result : deezer_rs::search::SearchResult;
+
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.horizontal(|ui|
                 {
@@ -163,50 +162,35 @@ async fn main() {
                 {
                     // not very optimal random pick...
                     let all_tracks: Vec<_> = itunes_library.Tracks.values().cloned().collect();
-                    random_track = all_tracks.choose(&mut rand::thread_rng()).unwrap().clone();
+                    let random_track = all_tracks.choose(&mut rand::thread_rng()).unwrap().clone();
                     println!("Selected track: {:?} / {:?}", random_track.Name, random_track.Artist);
                     random_track_str = format!("{} / {}", random_track.Name, random_track.Artist);
+
+                    let _ = tokio::spawn(async move {
+                        let search_string: String = format!("{} {}", random_track.Name, random_track.Artist);
+                        let search_results_res = client.search.get(&search_string).await; 
+                        let search_results = search_results_res.unwrap();
+
+                        // check search result is not empty
+                        if search_results.data.is_empty()
+                        {
+                            println!("Search didn't provide any result... Sorry!");
+                            return;
+                        }
+
+                        let search_result = &search_results.data[0]; // first result
+                        println!("{:?}",search_result.link);
+
+                        //let image_bytes = reqwest::blocking::get(&search_result.album.cover_small).unwrap().bytes().unwrap();
+                    });
                 }
                 if ui.button("Open").clicked()
                 {
-                    /*
-                    let search_string: String = format!("{} {}", random_track.Name, random_track.Artist);
-                    let search_results_res = client.search.get(&search_string).await; 
-                    let search_results = search_results_res.unwrap();
-
-                    // check search result is not empty
-                    if search_results.data.is_empty()
-                    {
-                        println!("Search didn't provide any result... Sorry!");
-                        return;
-                    }
-
-                    let search_result = &search_results.data[0]; // first result
-                    
-                    // manage error!
-                    let _ = open::with(&search_result.link, "firefox");
-                    */
+                    //let _ = open::with(&search_result.link, "firefox");
                 }
+                ui.image("https://e-cdns-images.dzcdn.net/images/cover/2e018122cb56986277102d2041a592c8/250x250-000000-80-0-0.jpg");
             });
         });
-
-        /*
-        let search_string: String = format!("{} {}", random_track.Name, random_track.Artist);
-        let search_results_res = client.search.get(&search_string).await; 
-        let search_results = search_results_res.unwrap();
-
-        // check search result is not empty
-        if search_results.data.is_empty()
-        {
-            println!("Search didn't provide any result... Sorry!");
-            return;
-        }
-
-        let search_result = &search_results.data[0]; // first result
-        
-        // manage error!
-        let _ = open::with(&search_result.link, "firefox");
-        */
     }
     else
     {
