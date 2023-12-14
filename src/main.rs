@@ -25,15 +25,16 @@ THE SOFTWARE.
 #[macro_use]
 extern crate serde_derive;
 
-use std::collections::HashMap;
-
-use rand::seq::SliceRandom;
-
 use clap::Parser;
-
 use deezer_rs::Deezer;
+use eframe::egui;
+use rand::seq::SliceRandom;
+//use reqwest::blocking;
+use std::collections::HashMap;
+use std::sync::mpsc::{Sender, Receiver};
+use std::sync::mpsc;
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Default, Deserialize, Clone)]
 struct Track {
     #[serde(rename = "Track ID")]
     track_id: i32,
@@ -77,6 +78,27 @@ struct Cli {
     path: std::path::PathBuf,
 }
 
+struct RandomTrack { 
+    track_url: String,
+    cover_url: String 
+} 
+
+// our application state
+//#[derive(Default)]
+struct RandomTrackApp
+{
+    //client: Deezer,
+    itunes_tracks: Vec<Track>,
+    random_track_str: String,
+    random_track_url: String,
+    random_cover_url: String,
+
+    message_channel: (
+        std::sync::mpsc::Sender<RandomTrack>,
+        std::sync::mpsc::Receiver<RandomTrack>,
+    )
+}
+
 #[tokio::main]
 async fn main() {
     
@@ -103,7 +125,7 @@ async fn main() {
 
         let client = Deezer::new();
 
-        for (key, value) in tracks
+        for (_key, value) in tracks
         {
             let search_string: String = format!("{} {}", value.Name, value.Artist);
             println!("*********** {:?} ***********", search_string);
@@ -138,30 +160,101 @@ async fn main() {
     {
         println!("----------- RANDOM TRACK! -----------");
 
-        // not very optimal random pick...
-        let all_tracks: Vec<_> = itunes_library.Tracks.values().cloned().collect();
-        let random_track = all_tracks.choose(&mut rand::thread_rng()).unwrap();
-        println!("Selected track: {:?} / {:?}", random_track.Name, random_track.Artist );
-        
-        // could be factorized! (same code upper)
-        let client = Deezer::new();
-        let search_string: String = format!("{} {}", random_track.Name, random_track.Artist);
-        let search_results_res = client.search.get(&search_string).await; 
-        let search_results = search_results_res.unwrap();
+        let options = eframe::NativeOptions {
+            viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
+            ..Default::default()
+        };
 
-        // check search result is not empty
-        if search_results.data.is_empty()
-        {
-            println!("Search didn't provide any result... Sorry!");
-            return;
-        }
+        let itunes_tracks_vec = itunes_library.Tracks.values().cloned().collect();
 
-        let search_result = &search_results.data[0]; // first result
-        // manage error!
-        let _ = open::with(&search_result.link, "firefox");
+        eframe::run_native("Rusty-Tunes Randomnessssss", options, Box::new(|ctx| {
+                // This gives us image support:
+                egui_extras::install_image_loaders(&ctx.egui_ctx);
+
+                Box::new( RandomTrackApp{ 
+                    //client: Deezer::new(),
+                    itunes_tracks: itunes_tracks_vec,
+                    random_track_str: "--".to_owned(),
+                    random_track_url: "undefined".to_owned(),
+                    random_cover_url: "https://e-cdns-images.dzcdn.net/images/cover/2e018122cb56986277102d2041a592c8/250x250-000000-80-0-0.jpg".to_owned(),
+                    message_channel: std::sync::mpsc::channel()
+                })
+            })
+        );
+
     }
     else
     {
         println!("Unknown mode!");
+    }
+
+    println!("Goodbye!");
+}
+
+impl eframe::App for RandomTrackApp {
+    /// the update method we have to keep fast
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame)
+    {
+        ctx.request_repaint();
+        loop {
+            match self.message_channel.1.try_recv() {
+                Ok(random_track) => {
+                    //println!("{:?}",random_track);
+                    self.random_track_url = random_track.track_url;
+                    self.random_cover_url = random_track.cover_url;
+                }
+                Err(_) => {
+                    break;
+                }
+            }
+        }
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+
+            ui.horizontal(|ui|
+            {
+                let name_label = ui.label("Track: ");
+                ui.text_edit_singleline(&mut self.random_track_str)
+                    .labelled_by(name_label.id);
+            });
+            if ui.button("Randomize").clicked()
+            {
+                // not very optimal random pick...
+                let random_track = self.itunes_tracks.choose(&mut rand::thread_rng()).unwrap().clone();
+                println!("Selected track: {:?} / {:?}", random_track.Name, random_track.Artist);
+                self.random_track_str = format!("{} / {}", random_track.Name, random_track.Artist);
+
+                let message_sender = self.message_channel.0.clone();
+                let _ = tokio::spawn(async move {
+
+                    // TODO : not very clean to instanciate new client each time...
+                    let dclient = Deezer::new();
+
+                    let search_string: String = format!("{} {}", random_track.Name, random_track.Artist);
+                    let search_results_res = dclient.search.get(&search_string).await; 
+                    let search_results = search_results_res.unwrap();
+
+                    // check search result is not empty
+                    if search_results.data.is_empty()
+                    {
+                        println!("Search didn't provide any result... Sorry!");
+                        return;
+                    }
+
+                    let search_result = &search_results.data[0]; // first result
+                    println!("{:?}",search_result.link);
+
+                    message_sender.send( RandomTrack {
+                        track_url: search_result.link.clone(),
+                        cover_url: search_result.album.cover_medium.clone()
+                    }).unwrap();
+                });
+            }
+            if ui.button("Open").clicked()
+            {
+                let _ = open::with(&self.random_track_url, "firefox");
+            }
+            ui.image(self.random_cover_url.clone());
+        });
     }
 }
