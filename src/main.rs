@@ -25,52 +25,15 @@ THE SOFTWARE.
 #[macro_use]
 extern crate serde_derive;
 
+use crate::parser::Track;
+use crate::parser::ApplePlist;
+
+mod parser;
+
 use clap::Parser;
 use deezer_rs::Deezer;
 use eframe::egui;
 use rand::seq::SliceRandom;
-//use reqwest::blocking;
-use std::collections::HashMap;
-use std::sync::mpsc::{Sender, Receiver};
-use std::sync::mpsc;
-
-#[derive(Debug, Default, Deserialize, Clone)]
-struct Track {
-    #[serde(rename = "Track ID")]
-    track_id: i32,
-    Name: String,
-    #[serde(default = "default_artist")]
-    Artist: String, // some tracks are missing artist...
-}
-
-fn default_artist() -> String {
-    "Unknown".to_string()
-}
-
-#[derive(Debug, Deserialize)]
-struct Playlist {
-    Name: String,
-    #[serde(rename = "Playlist ID")]
-    playlist_id: i32,
-    #[serde(default)]
-    Tracks: Vec<Track>,
-}
-
-#[derive(Debug, Deserialize)]
-struct ApplePlist {
-    #[serde(rename = "Major Version")]
-    major_version: i32,
-    #[serde(rename = "Minor Version")]
-    minor_version: i32,
-    Tracks: HashMap<String, Track>,
-    Playlists: Vec<Playlist>,
-}
-
-fn print_hashmap(hashmap: &HashMap<String, Track>) {
-    for (key, value) in hashmap {
-        println!("Key: {:?}, Value: {:?}", key, value.Name);
-    }
-}
 
 #[derive(Parser)]
 struct Cli {
