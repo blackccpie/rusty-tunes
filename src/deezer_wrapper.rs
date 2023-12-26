@@ -32,7 +32,7 @@ impl Wrapper {
     pub fn new() -> Self {
         Self { client: Deezer::new() }
     }
-    pub async fn search(&mut self, artist: &String, title: &String) -> (String, String) {
+    pub async fn search(&mut self, artist: &String, title: &String) -> (String, String, String, String) {
 
         let search_string: String = format!("{} {}", title, artist);
         
@@ -45,7 +45,7 @@ impl Wrapper {
         if search_results.data.is_empty()
         {
             println!("Search didn't provide any result... Sorry!");
-            return ("".to_owned(),"".to_owned());
+            return ("".to_owned(),"".to_owned(),"".to_owned(),"".to_owned());
         }
 
         /*let search_results = match search_results_res {
@@ -62,6 +62,11 @@ impl Wrapper {
         // get first result
         let search_result = &search_results.data[0];
 
-        (search_result.artist.name.to_owned(), search_result.title.to_owned())
+        (
+            search_result.artist.name.to_owned(), 
+            search_result.title.to_owned(), 
+            search_result.link.to_owned(), 
+            search_result.album.cover_medium.to_owned()
+        )
     }
 }

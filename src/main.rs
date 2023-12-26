@@ -33,7 +33,6 @@ mod parser;
 mod deezer_wrapper;
 
 use clap::Parser;
-use deezer_rs::Deezer;
 use eframe::egui;
 use rand::seq::SliceRandom;
 
@@ -82,7 +81,7 @@ async fn main() {
     }
     else if args.mode == "T"
     {
-        println!("----------- TRACKS -----------");
+        println!("----------- TRACKS (deezer matched) -----------");
         let tracks = &itunes_library.Tracks;
 
         //println!("{:?}, {:?}", itunes_library.major_version, itunes_library.minor_version);
@@ -92,7 +91,7 @@ async fn main() {
 
         for (_key, value) in tracks
         {
-            let (artist, title) = dee.search(&value.Name, &value.Artist).await; // TODO : remove await, why search has to be async?
+            let (artist, title, _link, _cover) = dee.search(&value.Name, &value.Artist).await; // TODO : remove await, why search has to be async?
             println!("{:?} / {:?}", artist, title);    
         }
     }
@@ -169,25 +168,13 @@ impl eframe::App for RandomTrackApp {
                 let _ = tokio::spawn(async move {
 
                     // TODO : not very clean to instanciate new client each time...
-                    let dclient = Deezer::new();
+                    let mut dee = deezer_wrapper::Wrapper::new();
 
-                    let search_string: String = format!("{} {}", random_track.Name, random_track.Artist);
-                    let search_results_res = dclient.search.get(&search_string).await; 
-                    let search_results = search_results_res.unwrap();
-
-                    // check search result is not empty
-                    if search_results.data.is_empty()
-                    {
-                        println!("Search didn't provide any result... Sorry!");
-                        return;
-                    }
-
-                    let search_result = &search_results.data[0]; // first result
-                    println!("{:?}",search_result.link);
+                    let (_artist, _title, link, cover) = dee.search(&random_track.Name, &random_track.Artist).await;
 
                     message_sender.send( RandomTrack {
-                        track_url: search_result.link.clone(),
-                        cover_url: search_result.album.cover_medium.clone()
+                        track_url: link,
+                        cover_url: cover
                     }).unwrap();
                 });
             }
