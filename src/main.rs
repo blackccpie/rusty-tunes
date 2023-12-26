@@ -1,7 +1,7 @@
 /*
 The MIT License
 
-Copyright (c) 2017-2017 Albert Murienne
+Copyright (c) 2024 Albert Murienne
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,8 @@ use crate::parser::Track;
 use crate::parser::ApplePlist;
 
 mod parser;
+
+mod deezer_wrapper;
 
 use clap::Parser;
 use deezer_rs::Deezer;
@@ -86,37 +88,12 @@ async fn main() {
         //println!("{:?}, {:?}", itunes_library.major_version, itunes_library.minor_version);
         //print_hashmap(tracks);
 
-        let client = Deezer::new();
+        let mut dee = deezer_wrapper::Wrapper::new(); // TODO : try to remove mut attribute?
 
         for (_key, value) in tracks
         {
-            let search_string: String = format!("{} {}", value.Name, value.Artist);
-            println!("*********** {:?} ***********", search_string);
-            let search_results_res = client.search.get(&search_string).await;
-            
-            let search_results = search_results_res.unwrap();
-
-            // check search result is not empty
-            if search_results.data.is_empty()
-            {
-                println!("Search didn't provide any result... Sorry!");
-                return;
-            }
-            
-            /*let search_results = match search_results_res {
-                Ok(search) => search,
-                Err(_) => continue,
-            };*/
-        
-            // print first result
-            let search_result = &search_results.data[0];
-            println!("{:?} / {:?}", search_result.title, search_result.artist.name);
-            
-            // print all results
-            /*for search_result in search_results.data.iter()
-            {
-                println!("{:?} / {:?}", search_result.title, search_result.artist.name);
-            }*/        
+            let (artist, title) = dee.search(&value.Name, &value.Artist).await; // TODO : remove await, why search has to be async?
+            println!("{:?} / {:?}", artist, title);    
         }
     }
     else if args.mode == "R"
@@ -139,7 +116,8 @@ async fn main() {
                     itunes_tracks: itunes_tracks_vec,
                     random_track_str: "--".to_owned(),
                     random_track_url: "undefined".to_owned(),
-                    random_cover_url: "https://e-cdns-images.dzcdn.net/images/cover/2e018122cb56986277102d2041a592c8/250x250-000000-80-0-0.jpg".to_owned(),
+                    //random_cover_url: "https://e-cdns-images.dzcdn.net/images/cover/2e018122cb56986277102d2041a592c8/250x250-000000-80-0-0.jpg".to_owned(),
+                    random_cover_url: "https://t3.ftcdn.net/jpg/03/13/23/76/240_F_313237633_0thdqc4pwnBsjDbFw6rxV8b8fIh6ncPd.jpg".to_owned(),
                     message_channel: std::sync::mpsc::channel()
                 })
             })
