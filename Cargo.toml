@@ -18,3 +18,4 @@ open = "5.0.1"
 eframe = "0.24.1"
 egui_extras = { version = "0.24.1", features = ["all_loaders"] }
 image = { version = "0.24", features = ["jpeg", "png"] } # Add the types you want support for
+futures = "0.3.30"

@@ -87,11 +87,11 @@ async fn main() {
         //println!("{:?}, {:?}", itunes_library.major_version, itunes_library.minor_version);
         //print_hashmap(tracks);
 
-        let mut dee = deezer_wrapper::Wrapper::new(); // TODO : try to remove mut attribute?
+        let dee = deezer_wrapper::Wrapper::new();
 
         for (_key, value) in tracks
         {
-            let (artist, title, _link, _cover) = dee.search(&value.Name, &value.Artist).await; // TODO : remove await, why search has to be async?
+            let (artist, title, _link, _cover) = dee.search(&value.Name, &value.Artist);
             println!("{:?} / {:?}", artist, title);    
         }
     }
@@ -168,9 +168,9 @@ impl eframe::App for RandomTrackApp {
                 let _ = tokio::spawn(async move {
 
                     // TODO : not very clean to instanciate new client each time...
-                    let mut dee = deezer_wrapper::Wrapper::new();
+                    let dee = deezer_wrapper::Wrapper::new();
 
-                    let (_artist, _title, link, cover) = dee.search(&random_track.Name, &random_track.Artist).await;
+                    let (_artist, _title, link, cover) = dee.search(&random_track.Name, &random_track.Artist);
 
                     message_sender.send( RandomTrack {
                         track_url: link,

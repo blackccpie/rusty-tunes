@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 use deezer_rs::Deezer;
 
+use futures::executor::block_on;
+
 pub struct Wrapper {
     client: Deezer
 }
@@ -32,13 +34,13 @@ impl Wrapper {
     pub fn new() -> Self {
         Self { client: Deezer::new() }
     }
-    pub async fn search(&mut self, artist: &String, title: &String) -> (String, String, String, String) {
+    pub fn search(&self, artist: &String, title: &String) -> (String, String, String, String) {
 
         let search_string: String = format!("{} {}", title, artist);
         
         //println!("*********** {:?} ***********", search_string);
         
-        let search_results_res = self.client.search.get(&search_string).await;
+        let search_results_res = block_on(self.client.search.get(&search_string));
         let search_results = search_results_res.unwrap();
 
         // check search result is not empty
