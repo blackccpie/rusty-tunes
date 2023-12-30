@@ -63,6 +63,12 @@ struct RandomTrackApp
     )
 }
 
+use std::sync::Mutex;
+use once_cell::sync::Lazy;
+static shared_dee: Lazy<Mutex<deezer_wrapper::Wrapper>> = Lazy::new(|| {
+    Mutex::new(deezer_wrapper::Wrapper::new())
+});
+
 #[tokio::main]
 async fn main() {
     
@@ -87,11 +93,9 @@ async fn main() {
         //println!("{:?}, {:?}", itunes_library.major_version, itunes_library.minor_version);
         //print_hashmap(tracks);
 
-        let dee = deezer_wrapper::Wrapper::new();
-
         for (_key, value) in tracks
         {
-            let (artist, title, _link, _cover) = dee.search(&value.Name, &value.Artist);
+            let (artist, title, _link, _cover) = shared_dee.lock().unwrap().search(&value.Name, &value.Artist);
             println!("{:?} / {:?}", artist, title);    
         }
     }
@@ -133,7 +137,7 @@ async fn main() {
 
 impl eframe::App for RandomTrackApp {
     /// the update method we have to keep fast
-    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame)
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame)
     {
         ctx.request_repaint();
         loop {
@@ -167,10 +171,7 @@ impl eframe::App for RandomTrackApp {
                 let message_sender = self.message_channel.0.clone();
                 let _ = tokio::spawn(async move {
 
-                    // TODO : not very clean to instanciate new client each time...
-                    let dee = deezer_wrapper::Wrapper::new();
-
-                    let (_artist, _title, link, cover) = dee.search(&random_track.Name, &random_track.Artist);
+                    let (_artist, _title, link, cover) = shared_dee.lock().unwrap().search(&random_track.Name, &random_track.Artist);
 
                     message_sender.send( RandomTrack {
                         track_url: link,
