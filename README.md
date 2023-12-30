@@ -13,10 +13,11 @@ $ cargo build --release
 Usage: rusty-tunes <MODE> <PATH>
 ```
 
-* list all tracks (console mode)
+* list all deezer matched tracks (console mode)
 ```console
 $ ./target/release/rusty-tunes T mylibrary.xml
 ```
+
 * list all playlists (console mode)
 ```console
 $ ./target/release/rusty-tunes P mylibrary.xml
