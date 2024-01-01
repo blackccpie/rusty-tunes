@@ -65,7 +65,7 @@ struct RandomTrackApp
 
 use std::sync::Mutex;
 use once_cell::sync::Lazy;
-static shared_dee: Lazy<Mutex<deezer_wrapper::Wrapper>> = Lazy::new(|| {
+static SHARED_DEE: Lazy<Mutex<deezer_wrapper::Wrapper>> = Lazy::new(|| {
     Mutex::new(deezer_wrapper::Wrapper::new())
 });
 
@@ -95,7 +95,7 @@ async fn main() {
 
         for (_key, value) in tracks
         {
-            let (artist, title, _link, _cover) = shared_dee.lock().unwrap().search(&value.Name, &value.Artist);
+            let (artist, title, _link, _cover) = SHARED_DEE.lock().unwrap().search(&value.Name, &value.Artist);
             println!("{:?} / {:?}", artist, title);    
         }
     }
@@ -171,7 +171,7 @@ impl eframe::App for RandomTrackApp {
                 let message_sender = self.message_channel.0.clone();
                 let _ = tokio::spawn(async move {
 
-                    let (_artist, _title, link, cover) = shared_dee.lock().unwrap().search(&random_track.Name, &random_track.Artist);
+                    let (_artist, _title, link, cover) = SHARED_DEE.lock().unwrap().search(&random_track.Name, &random_track.Artist);
 
                     message_sender.send( RandomTrack {
                         track_url: link,

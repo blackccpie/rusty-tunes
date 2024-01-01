@@ -22,6 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+// Could this be avoided using struct macros?
+#![allow(non_snake_case)]
+
 use std::collections::HashMap;
 
 fn print_hashmap(hashmap: &HashMap<String, Track>) {
