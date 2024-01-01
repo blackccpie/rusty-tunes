@@ -26,8 +26,18 @@ use yew::prelude::*;
 
 #[function_component(App)]
 fn app() -> Html {
+
+    let onclick = {
+        //let counter = app_ctx.clone();
+        Callback::from(move |_| {})
+    };
+
     html! {
+        <main>
         <h1>{ "Hello World" }</h1>
+        <button {onclick} class="button button-primary">{"Randomize"}</button>
+        <iframe title="deezer-widget" src="https://widget.deezer.com/widget/dark/playlist/1479458365" width="100%" height="300" frameborder="0" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
+        </main>
     }
 }
 

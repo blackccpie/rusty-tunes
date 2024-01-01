@@ -45,6 +45,15 @@ async fn static_files(path: PathBuf) -> Result<NamedFile, NotFound<String>> {
     }
 }
 
+#[get("/data/<path..>")]
+async fn data(path: PathBuf) -> Result<NamedFile, NotFound<String>> {
+    let path = PathBuf::from("./data/").join(path);
+    match NamedFile::open(path).await {
+        Ok(f) => Ok(f),
+        Err(_) => get_index().await,
+    }
+}
+
 // return the index when the url is /
 #[get("/")]
 async fn index() -> Result<NamedFile, NotFound<String>> {
@@ -55,5 +64,5 @@ async fn index() -> Result<NamedFile, NotFound<String>> {
 fn rocket() -> _ {
     // you must mount the static_files route
     rocket::build()
-        .mount("/", routes![index, static_files])
+        .mount("/", routes![index, static_files, data])
 }
