@@ -22,9 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#[macro_use]
-extern crate serde_derive;
+use serde::{Deserialize, Serialize};
 
-pub mod parser;
-pub mod deezer_wrapper;
-pub mod common;
+#[derive(Debug, Clone, PartialEq, Default, Deserialize, Serialize)]
+pub struct XmlPlist {
+    pub xml_plist: String,
+}

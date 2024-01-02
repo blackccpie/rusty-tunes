@@ -22,12 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+extern crate core;
+use core::deezer_wrapper;
+
+mod fetchstates; // TODO : change modules architectures accordingly to rust book...
+
+mod xmlplist;
+use crate::xmlplist::XmlPlist;
+
+use std::path::PathBuf;
+
 use yew::prelude::*;
 
 #[function_component(App)]
 fn app() -> Html {
 
     let onclick = {
+        let file_path : PathBuf = "".into();
+        let itunes_library = core::parser::parse_xml_plist(&file_path);
         //let counter = app_ctx.clone();
         Callback::from(move |_| {})
     };
@@ -35,7 +47,10 @@ fn app() -> Html {
     html! {
         <main>
         <h1>{ "Hello World" }</h1>
-        <button {onclick} class="button button-primary">{"Randomize"}</button>
+        <button {onclick} class="button button-primary">{"Load"}</button>
+        <div class="container-sm justify-content-center m-5">
+            <XmlPlist id={"itunes_library_redux.xml"}/>
+        </div>
         <iframe title="deezer-widget" src="https://widget.deezer.com/widget/dark/playlist/1479458365" width="100%" height="300" frameborder="0" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
         </main>
     }

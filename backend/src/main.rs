@@ -24,9 +24,27 @@ THE SOFTWARE.
 
 #[macro_use] extern crate rocket;
 
+extern crate core;
+use core::common::XmlPlist;
+
 use rocket::fs::NamedFile;
 use rocket::response::status::NotFound;
 use std::path::PathBuf;
+use rocket::serde::json::Json;
+use std::fs;
+
+#[get("/xmlplist/<path..>")]
+fn get_xmlplist(path: PathBuf) -> Json<XmlPlist> {
+    let path = PathBuf::from("data/xml/").join(path);
+    match fs::read_to_string(path) {
+        Ok(xmlplist) => Json(XmlPlist {
+            xml_plist: String::from(xmlplist),
+        }),
+        Err(e) => Json(XmlPlist {
+            xml_plist: String::from(format!("Error: {}", e)),
+        }),
+    }
+}
 
 // return the index file as a Rocket NamedFile
 async fn get_index() -> Result<NamedFile, NotFound<String>> {
@@ -65,4 +83,5 @@ fn rocket() -> _ {
     // you must mount the static_files route
     rocket::build()
         .mount("/", routes![index, static_files, data])
+        .mount("/api", routes![get_xmlplist])
 }
