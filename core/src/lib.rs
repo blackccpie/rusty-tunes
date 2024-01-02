@@ -22,45 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-// Could this be avoided using struct macros?
-#![allow(non_snake_case)]
+#[macro_use]
+extern crate serde_derive;
 
-use std::collections::HashMap;
-
-fn print_hashmap(hashmap: &HashMap<String, Track>) {
-    for (key, value) in hashmap {
-        println!("Key: {:?}, Value: {:?}", key, value.Name);
-    }
-}
-
-#[derive(Debug, Default, Deserialize, Clone)]
-pub struct Track {
-    #[serde(rename = "Track ID")]
-    track_id: i32,
-    pub Name: String,
-    #[serde(default = "default_artist")]
-    pub Artist: String, // some tracks are missing artist...
-}
-
-fn default_artist() -> String {
-    "Unknown".to_string()
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Playlist {
-    pub Name: String,
-    #[serde(rename = "Playlist ID")]
-    playlist_id: i32,
-    #[serde(default)]
-    Tracks: Vec<Track>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct ApplePlist {
-    #[serde(rename = "Major Version")]
-    major_version: i32,
-    #[serde(rename = "Minor Version")]
-    minor_version: i32,
-    pub Tracks: HashMap<String, Track>,
-    pub Playlists: Vec<Playlist>,
-}
+pub mod parser;
+pub mod deezer_wrapper;

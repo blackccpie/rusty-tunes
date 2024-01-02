@@ -22,15 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#[macro_use]
-extern crate serde_derive;
-
-use crate::parser::Track;
-use crate::parser::ApplePlist;
-
-mod parser;
-
-mod deezer_wrapper;
+extern crate core;
+use core::parser::Track;
+use core::parser::ApplePlist;
+use core::deezer_wrapper;
 
 use clap::Parser;
 use eframe::egui;
@@ -74,7 +69,7 @@ async fn main() {
     
     let args = Cli::parse();
 
-    let itunes_library: ApplePlist = plist::from_file(args.path).unwrap();
+    let itunes_library = core::parser::parse_xml_plist(&args.path);
     
     if args.mode == "P"
     {
