@@ -66,7 +66,17 @@ pub struct ApplePlist {
     pub Playlists: Vec<Playlist>,
 }
 
-pub fn parse_xml_plist(file_path: &PathBuf) -> ApplePlist { 
+pub fn parse_xml_plist(file_path: &PathBuf) -> ApplePlist {
     let itunes_library: ApplePlist = plist::from_file(file_path).unwrap();
+    itunes_library
+}
+
+pub fn parse_xmlreader_plist<R: std::io::Read + Clone>(file_reader: &R) -> ApplePlist {
+    let itunes_library: ApplePlist = plist::from_reader_xml(file_reader.clone()).unwrap();
+    itunes_library
+}
+
+pub fn parse_xmlbytes_plist(file_bytes: &[u8]) -> ApplePlist {
+    let itunes_library: ApplePlist = plist::from_bytes(file_bytes).unwrap();
     itunes_library
 }
