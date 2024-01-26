@@ -33,7 +33,7 @@ use std::path::PathBuf;
 use rocket::serde::json::Json;
 use std::fs;
 
-#[get("/xmlplist/<path..>")]
+#[get("/xml/<path..>")]
 fn get_xmlplist(path: PathBuf) -> Json<XmlPlist> {
     let path = PathBuf::from("data/xml/").join(path);
     match fs::read_to_string(path) {

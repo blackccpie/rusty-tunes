@@ -37,21 +37,27 @@ use yew::prelude::*;
 #[function_component(App)]
 fn app() -> Html {
 
-    let onclick = {
-        let file_path : PathBuf = "".into();
-        let itunes_library = core::parser::parse_xml_plist(&file_path);
-        //let counter = app_ctx.clone();
-        Callback::from(move |_| {})
-    };
+    let onclick = Callback::from(move |_| {
+            use web_sys::console;
+            let file_uri : String = "/api/xml/itunes_library_redux.xml".to_string();
+            wasm_bindgen_futures::spawn_local(async move {
+                let body = reqwasm::http::Request::get(file_uri.as_str())
+                    .send().await.unwrap().json::<std::collections::HashMap<String,String>>().await.unwrap();
+                console::log_1(&body["xml_plist"].clone().into());
+                let itunes_library = core::parser::parse_xmlbytes_plist(&body["xml_plist"].clone().into_bytes());
+            });
+            let message = String::from("xml plist loaded!");
+            console::log_1(&message.into());
+        });
 
     html! {
         <main>
         <h1>{ "Hello World" }</h1>
         <button {onclick} class="button button-primary">{"Load"}</button>
-        <div class="container-sm justify-content-center m-5">
-            <XmlPlist id={"itunes_library_redux.xml"}/>
-        </div>
-        <iframe title="deezer-widget" src="https://widget.deezer.com/widget/dark/playlist/1479458365" width="100%" height="300" frameborder="0" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
+        //<div class="container-sm justify-content-center m-5">
+        //    <XmlPlist id={"itunes_library_redux.xml"}/>
+        //</div>
+        //<iframe title="deezer-widget" src="https://widget.deezer.com/widget/dark/playlist/1479458365" width="100%" height="300" frameborder="0" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
         </main>
     }
 }
