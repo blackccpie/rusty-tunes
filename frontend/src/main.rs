@@ -23,6 +23,7 @@ THE SOFTWARE.
 */
 
 extern crate core;
+use core::deezer_wrapper::Wrapper;
 use core::parser::Track;
 
 mod fetchstates; // TODO : change modules architectures accordingly to rust book...
@@ -41,37 +42,49 @@ fn app() -> Html {
 
     let itunes_tracks = use_state(|| None::<Vec<Track>>);
     let track_name = use_state(|| "Uninitialized".to_string());
+    let matched_track_name = use_state(|| "Uninitialized".to_string());
 
     // TODO : little code cleanup...
     let onload = {
         let itunes_tracks = itunes_tracks.clone();
         Callback::from(move |_| {
-            use web_sys::console;
             let file_uri : String = "/api/xml/itunes_library_redux.xml".to_string();
             wasm_bindgen_futures::spawn_local({
                 let itunes_tracks = itunes_tracks.clone();
                 async move {
                     let body = reqwasm::http::Request::get(file_uri.as_str())
                         .send().await.unwrap().json::<std::collections::HashMap<String,String>>().await.unwrap();
-                    console::log_1(&body["xml_plist"].clone().into());
+                    //use web_sys::console;
+                    //console::log_1(&body["xml_plist"].clone().into());
                     let library = core::parser::parse_xmlbytes_plist(&body["xml_plist"].clone().into_bytes());
                     let tracks : Vec<Track> = library.Tracks.values().cloned().collect::<Vec<Track>>();
                     itunes_tracks.set( Some(tracks) );
                 }
             });
-            let message = String::from("xml plist loaded!");
-            console::log_1(&message.into());
+            let message = String::from("Loaded!");
+            web_sys::console::log_1(&message.into());
         })
     };
 
     let onrand = {
         let itunes_tracks = itunes_tracks.clone();
         let track_name = track_name.clone();
+        let matched_track_name = matched_track_name.clone();
         Callback::from(move |_| {
             let rand_track = itunes_tracks.as_ref().unwrap().choose(&mut rand::thread_rng()).unwrap().clone();
-            use web_sys::console;
             track_name.set(rand_track.Name.clone());
-            console::log_1(&rand_track.Name.into());
+            //use web_sys::console;
+            //console::log_1(&rand_track.Name.clone().into());
+            wasm_bindgen_futures::spawn_local({
+                //let matched_track_name = matched_track_name.clone();
+                async move {
+                    let deewrap = Wrapper::new(); // TODO : factorize instead of repeated instanciation
+                    let (_artist, _title, link, cover) = deewrap.search(&rand_track.Name, &rand_track.Artist);
+                    //matched_track_name.set(_title);
+                }
+            });
+            let message = String::from("Randomized!");
+            web_sys::console::log_1(&message.into());
         })
     };
 
@@ -81,8 +94,12 @@ fn app() -> Html {
         <button onclick={onload} class="button button-primary">{"Load"}</button>
         <button onclick={onrand} class="button button-primary">{"Randomize"}</button>
         <p>
-            <b>{ "Current track: " }</b>
+            <b>{ "Randomized track: " }</b>
             { (*track_name).clone() }
+        </p>
+        <p>
+        <b>{ "Found track: " }</b>
+            { (*matched_track_name).clone() }
         </p>
         //<div class="container-sm justify-content-center m-5">
         //    <XmlPlist id={"itunes_library_redux.xml"}/>
