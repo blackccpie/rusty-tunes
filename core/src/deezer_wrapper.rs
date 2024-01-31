@@ -23,6 +23,7 @@ THE SOFTWARE.
 */
 
 use deezer_rs::Deezer;
+use deezer_rs::search::SearchResults;
 
 use futures::executor::block_on;
 
@@ -34,6 +35,34 @@ impl Wrapper {
     pub fn new() -> Self {
         Self { client: Deezer::new() }
     }
+    fn to_result_tuple(&self, search_results: &SearchResults) -> (String, String, String, String) {
+        
+        // get first result
+        let search_result = &search_results.data[0];
+
+        (
+            search_result.artist.name.to_owned(), 
+            search_result.title.to_owned(), 
+            search_result.link.to_owned(), 
+            search_result.album.cover_medium.to_owned()
+        )
+    }
+    pub async fn asearch(&self, artist: &String, title: &String) -> (String, String, String, String) {
+
+        let search_string: String = format!("{} {}", title, artist);
+        
+        let search_results_res = self.client.search.get(&search_string);
+        let search_results = search_results_res.await.unwrap();
+
+        // check search result is not empty
+        if search_results.data.is_empty()
+        {
+            println!("Async Search didn't provide any result... Sorry!");
+            return ("".to_owned(),"".to_owned(),"".to_owned(),"".to_owned());
+        }
+
+        self.to_result_tuple(&search_results)
+    }   
     pub fn search(&self, artist: &String, title: &String) -> (String, String, String, String) {
 
         let search_string: String = format!("{} {}", title, artist);
@@ -50,25 +79,6 @@ impl Wrapper {
             return ("".to_owned(),"".to_owned(),"".to_owned(),"".to_owned());
         }
 
-        /*let search_results = match search_results_res {
-            Ok(search) => search,
-            Err(_) => continue,
-        };*/
-        
-        // print all results
-        /*for search_result in search_results.data.iter()
-        {
-            println!("{:?} / {:?}", search_result.title, search_result.artist.name);
-        }*/    
-    
-        // get first result
-        let search_result = &search_results.data[0];
-
-        (
-            search_result.artist.name.to_owned(), 
-            search_result.title.to_owned(), 
-            search_result.link.to_owned(), 
-            search_result.album.cover_medium.to_owned()
-        )
+        self.to_result_tuple(&search_results)
     }
 }
