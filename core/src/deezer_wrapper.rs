@@ -35,19 +35,20 @@ impl Wrapper {
     pub fn new() -> Self {
         Self { client: Deezer::new() }
     }
-    fn to_result_tuple(&self, search_results: &SearchResults) -> (String, String, String, String) {
+    fn to_result_tuple(&self, search_results: &SearchResults) -> (u64, String, String, String, String) {
         
         // get first result
         let search_result = &search_results.data[0];
 
         (
+            search_result.id.to_owned(),
             search_result.artist.name.to_owned(), 
             search_result.title.to_owned(), 
             search_result.link.to_owned(), 
             search_result.album.cover_medium.to_owned()
         )
     }
-    pub async fn asearch(&self, artist: &String, title: &String) -> (String, String, String, String) {
+    pub async fn asearch(&self, artist: &String, title: &String) -> (u64, String, String, String, String) {
 
         let search_string: String = format!("{} {}", title, artist);
         
@@ -58,12 +59,12 @@ impl Wrapper {
         if search_results.data.is_empty()
         {
             println!("Async Search didn't provide any result... Sorry!");
-            return ("".to_owned(),"".to_owned(),"".to_owned(),"".to_owned());
+            return (0.to_owned(),"".to_owned(),"".to_owned(),"".to_owned(),"".to_owned());
         }
 
         self.to_result_tuple(&search_results)
     }   
-    pub fn search(&self, artist: &String, title: &String) -> (String, String, String, String) {
+    pub fn search(&self, artist: &String, title: &String) -> (u64, String, String, String, String) {
 
         let search_string: String = format!("{} {}", title, artist);
         
@@ -76,7 +77,7 @@ impl Wrapper {
         if search_results.data.is_empty()
         {
             println!("Search didn't provide any result... Sorry!");
-            return ("".to_owned(),"".to_owned(),"".to_owned(),"".to_owned());
+            return (0.to_owned(),"".to_owned(),"".to_owned(),"".to_owned(),"".to_owned());
         }
 
         self.to_result_tuple(&search_results)

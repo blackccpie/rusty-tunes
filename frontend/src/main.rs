@@ -43,6 +43,7 @@ fn app() -> Html {
     let itunes_tracks = use_state(|| None::<Vec<Track>>);
     let track_name = use_state(|| "Uninitialized".to_string());
     let matched_track_name = use_state(|| "Uninitialized".to_string());
+    let iframe_url = use_state(|| "https://widget.deezer.com/widget/dark/track/15593567".to_string());
 
     // TODO : little code cleanup...
     let onload = {
@@ -70,20 +71,24 @@ fn app() -> Html {
         let itunes_tracks = itunes_tracks.clone();
         let track_name = track_name.clone();
         let matched_track_name = matched_track_name.clone();
+        let iframe_url = iframe_url.clone();
         Callback::from(move |_| {
             let rand_track = itunes_tracks.as_ref().unwrap().choose(&mut rand::thread_rng()).unwrap().clone();
             track_name.set(rand_track.Name.clone());
             //web_sys::console::log_1(&rand_track.Name.clone().into());
             wasm_bindgen_futures::spawn_local({
                 let matched_track_name = matched_track_name.clone();
+                let iframe_url = iframe_url.clone();
                 async move {
 
                     let deewrap = Wrapper::new(); // TODO : factorize instead of repeated instanciation
-                    let (_artist, _title, link, cover) = deewrap.asearch(&rand_track.Name, &rand_track.Artist).await;
-                    matched_track_name.set(_title);
+                    let (id, _artist, title, _link, _cover) = deewrap.asearch(&rand_track.Name, &rand_track.Artist).await;
+                    matched_track_name.set(title);
 
                     let message2 = String::from("deezer request answered :-)");
                     web_sys::console::log_1(&message2.into());
+
+                    iframe_url.set(format!("https://widget.deezer.com/widget/dark/track/{}",id));
                 }
             });
             let message = String::from("Randomized!");
@@ -107,7 +112,7 @@ fn app() -> Html {
         //<div class="container-sm justify-content-center m-5">
         //    <XmlPlist id={"itunes_library_redux.xml"}/>
         //</div>
-        //<iframe title="deezer-widget" src="https://widget.deezer.com/widget/dark/playlist/1479458365" width="100%" height="300" frameborder="0" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
+        <iframe title="deezer-widget" src={(*iframe_url).clone()} width="100%" height="300" frameborder="0" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
         </main>
     }
 }
