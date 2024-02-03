@@ -22,8 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-use deezer_rs::Deezer;
-use deezer_rs::search::SearchResults;
+use crate::deezer_api::{Deezer,SearchResults};
 
 use futures::executor::block_on;
 

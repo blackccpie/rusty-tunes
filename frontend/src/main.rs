@@ -32,9 +32,7 @@ mod xmlplist;
 use crate::xmlplist::XmlPlist;
 
 use rand::seq::SliceRandom;
-
 use std::path::PathBuf;
-
 use yew::prelude::*;
 
 #[function_component(App)]
@@ -98,7 +96,7 @@ fn app() -> Html {
 
     html! {
         <main>
-        <h1>{ "Hello World" }</h1>
+        <h1>{ "Rusty Tunes" }</h1>
         <button onclick={onload} class="button button-primary">{"Load"}</button>
         <button onclick={onrand} class="button button-primary">{"Randomize"}</button>
         <p>

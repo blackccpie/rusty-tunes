@@ -25,6 +25,8 @@ THE SOFTWARE.
 #[macro_use]
 extern crate serde_derive;
 
+mod deezer_api;
+
 pub mod parser;
 pub mod deezer_wrapper;
 pub mod common;

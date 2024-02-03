@@ -22,16 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-use yew::prelude::*;
-
-use web_sys::Node;
-use yew::virtual_dom::vnode::VNode;
-
 use reqwasm::http::Request;
+use web_sys::Node;
+use yew::prelude::*;
+use yew::virtual_dom::vnode::VNode;
 
 extern crate core;
 
-//use crate::fetchstates;
 use crate::fetchstates::{FetchError, FetchState, FetchStateMsg};
 
 #[derive(Clone, Debug, Eq, PartialEq, Properties)]
