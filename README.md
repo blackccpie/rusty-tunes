@@ -1,7 +1,9 @@
 # rusty-tunes
 
-**Navigating through old iTunes xml library with the help of Rust**
+**Basic CLI/GUI Application to navigate through old iTunes xml library with the help of Rust:**
 
+![GUI](images/randomness.png)
+ 
 For now the UI is built with [egui](https://github.com/emilk/egui) framework, but I'm working on a web based wasm compiled version on the [web-frontend](https://github.com/blackccpie/rusty-tunes/tree/feat/web-frontend) branch.
 
 ## building
