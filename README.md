@@ -9,7 +9,18 @@
 
 ## building
 
+### Desktop build (DEPRECATED)
+
 ```console
+$ cargo build --release
+```
+
+### WASM build (IN PROGRESS)
+
+```console
+$ cd frontend
+$ trunk build --release
+$ cd ../backend
 $ cargo build --release
 ```
 

@@ -26,7 +26,7 @@ extern crate core;
 use core::deezer_wrapper::Wrapper;
 use core::parser::Track;
 
-mod fetchstates; // TODO : change modules architectures accordingly to rust book...
+mod fetchstates; // TODO(blackccpie) : change modules architectures accordingly to rust book...
 
 mod xmlplist;
 use crate::xmlplist::XmlPlist;
@@ -43,7 +43,7 @@ fn app() -> Html {
     let matched_track_name = use_state(|| "Uninitialized".to_string());
     let iframe_url = use_state(|| "https://widget.deezer.com/widget/dark/track/15593567".to_string());
 
-    // TODO : little code cleanup...
+    // TODO(blackccpie) : little code cleanup...
     let onload = {
         let itunes_tracks = itunes_tracks.clone();
         Callback::from(move |_| {
@@ -79,7 +79,7 @@ fn app() -> Html {
                 let iframe_url = iframe_url.clone();
                 async move {
 
-                    let deewrap = Wrapper::new(); // TODO : factorize instead of repeated instanciation
+                    let deewrap = Wrapper::new(); // TODO(blackccpie) : factorize instead of repeated instanciation
                     let (id, _artist, title, _link, _cover) = deewrap.asearch(&rand_track.Name, &rand_track.Artist).await;
                     matched_track_name.set(title);
 

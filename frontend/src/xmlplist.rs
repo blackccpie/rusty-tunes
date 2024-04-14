@@ -111,7 +111,7 @@ impl XmlPlist {
     fn render_xmlplist(&self) -> String {
         let Self { xmlplist } = self;
         //let mut options = Options::empty();
-        //options.insert(Options::ENABLE_STRIKETHROUGH); // TODO : NEEDED??
+        //options.insert(Options::ENABLE_STRIKETHROUGH); // TODO(blackccpie) : NEEDED??
 
         match xmlplist {
             FetchState::Success(xmlplist) => {

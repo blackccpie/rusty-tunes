@@ -38,5 +38,5 @@ fn build_frontend<P: AsRef<Path>>(source: P) {
         .args(&["build", "--release"])
         .current_dir(source.as_ref())
         .status()
-        .expect("Failed to build Frontend");
+        .expect("Failed to build Frontend"); // TODO(blackccpie) : does not stop the global build on failure?
 }
